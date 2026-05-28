@@ -21,7 +21,6 @@ public class DataLibCommand implements ModInitializer {
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 
-            // /datalib  (and alias /dl)
             var root = literal("datalib")
                 .requires(src -> src.hasPermissionLevel(2))
 
@@ -50,10 +49,12 @@ public class DataLibCommand implements ModInitializer {
     }
 
     private int triggerReload(CommandContext<ServerCommandSource> ctx) {
-        // Delegates to vanilla /reload; datapack engine re-runs dl_load:_
-        ctx.getSource().getServer().reloadResources(
-            ctx.getSource().getServer().getDataPackManager().getEnabledNames()
-        );
+        try {
+            ctx.getSource().getServer().getCommandManager().getDispatcher()
+                .execute("reload", ctx.getSource().withLevel(4));
+        } catch (Exception e) {
+            LOGGER.warn("[DataLib] Reload via command failed: {}", e.getMessage());
+        }
         ctx.getSource().sendFeedback(
             () -> Text.literal("[DataLib] Reload triggered."),
             true
@@ -62,9 +63,12 @@ public class DataLibCommand implements ModInitializer {
     }
 
     private int toggleDebug(CommandContext<ServerCommandSource> ctx) {
-        // Runs the datapack-side debug toggle function
-        ctx.getSource().getServer().getCommandManager().getDispatcher()
-            .execute("function datalib:debug", ctx.getSource().withLevel(4));
+        try {
+            ctx.getSource().getServer().getCommandManager().getDispatcher()
+                .execute("function datalib:debug", ctx.getSource().withLevel(4));
+        } catch (Exception e) {
+            LOGGER.warn("[DataLib] Debug toggle failed: {}", e.getMessage());
+        }
         ctx.getSource().sendFeedback(
             () -> Text.literal("[DataLib] Debug toggled — check datalib:debug storage."),
             false
